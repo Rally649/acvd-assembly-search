@@ -1,0 +1,579 @@
+<html>
+
+<head>
+	<title>ACVDアセン検索</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1.0">
+	<style>
+		* {
+			white-space: nowrap;
+		}
+		ul {
+			list-style: none;
+			padding-left: 0;
+		}
+		.right {
+			text-align: right;
+		}
+		.box {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: start;
+		}
+		.right {
+			text-align: right;
+		}
+		.parts-type {
+			width: 5.0rem;
+		}
+		.parts-name {
+			width: 12.0rem;
+		}
+		.parts-type-and-name{
+			width: 17.0rem;
+			text-align: left;
+		}
+	</style>
+	
+	<script>
+		let heads = [
+			{name: 'D/UHD-10',	type: 'KE',	ke: 81,	ce: 5,	te: 13},
+			{name: 'HA-111',	type: 'KE',	ke: 92,	ce: 8,	te: 15},
+			{name: 'HA-202',	type: 'KE',	ke: 131,	ce: 11,	te: 28},
+			{name: 'HA-202(改造)',	type: 'KE',	ke: 115,	ce: 88,	te: 20},
+			{name: 'HA-309',	type: 'KE',	ke: 85,	ce: 7,	te: 12},
+			{name: 'KAGERO mdl.1',	type: 'KE',	ke: 35,	ce: 2,	te: 5},
+			{name: 'Hd-K-T11',	type: 'KE',	ke: 99,	ce: 8,	te: 21},
+			{name: 'Hd-K-T11(改造)',	type: 'KE',	ke: 80,	ce: 6,	te: 20},
+			{name: 'HB-141',	type: 'KE',	ke: 148,	ce: 19,	te: 32},
+			{name: 'Hd-R-E06',	type: 'KE',	ke: 168,	ce: 31,	te: 43},
+			{name: 'Hd-R-E06(改造)',	type: 'KE',	ke: 174,	ce: 98,	te: 40},
+			{name: 'HF-132',	type: 'KE',	ke: 42,	ce: 4,	te: 8},
+			{name: 'HF-227',	type: 'KE',	ke: 138,	ce: 12,	te: 36},
+			{name: 'HF-227(改造)',	type: 'KE',	ke: 92,	ce: 15,	te: 94}, // 便宜上KEに分類
+			{name: 'H07 Starlight',	type: 'KE',	ke: 185,	ce: 25,	te: 42},
+			{name: 'H12 Swallowtail',	type: 'KE',	ke: 137,	ce: 21,	te: 22},
+			{name: 'D/HD226',	type: 'CE',	ke: 22,	ce: 124,	te: 8},
+			{name: 'Hd-U-C15',	type: 'CE',	ke: 25,	ce: 143,	te: 17},
+			{name: 'Hd-U-C23',	type: 'CE',	ke: 26,	ce: 155,	te: 19},
+			{name: 'Hd-U-C23(改造)',	type: 'CE',	ke: 22,	ce: 147,	te: 15},
+			{name: 'Hd-U-C37',	type: 'CE',	ke: 22,	ce: 112,	te: 9},
+			{name: 'UMEGAE mdl.1',	type: 'CE',	ke: 31,	ce: 125,	te: 11},
+			{name: 'UMEGAE mdl.1(改造)',	type: 'CE',	ke: 30,	ce: 122,	te: 10},
+			{name: 'YUGIRI mdl.1',	type: 'CE',	ke: 11,	ce: 91,	te: 7},
+			{name: 'YUGIRI mdl.1(改造)',	type: 'CE',	ke: 16,	ce: 101,	te: 9},
+			{name: 'HC-129',	type: 'CE',	ke: 38,	ce: 181,	te: 32},
+			{name: 'HC-129(改造)',	type: 'CE',	ke: 105,	ce: 202,	te: 45},
+			{name: 'Hd-G-A88',	type: 'CE',	ke: 45,	ce: 308,	te: 22},
+			{name: 'Hd-Y-F08',	type: 'CE',	ke: 15,	ce: 101,	te: 10},
+			{name: 'Hd-Y-F08(改造)',	type: 'CE',	ke: 18,	ce: 104,	te: 9},
+			{name: 'Hd-Y-F17',	type: 'CE',	ke: 21,	ce: 168,	te: 11},
+			{name: 'D/KT-2G3',	type: 'TE',	ke: 11,	ce: 15,	te: 174},
+			{name: 'HD-116',	type: 'TE',	ke: 13,	ce: 17,	te: 202},
+			{name: 'HD-210',	type: 'TE',	ke: 21,	ce: 21,	te: 235},
+			{name: 'HD-307',	type: 'TE',	ke: 15,	ce: 18,	te: 193},
+			{name: 'HD-307(改造)',	type: 'TE',	ke: 13,	ce: 14,	te: 175},
+			{name: 'KAGARIBI mdl.1',	type: 'TE',	ke: 40,	ce: 70,	te: 301},
+			{name: 'HE-119',	type: 'TE',	ke: 13,	ce: 13,	te: 232},
+			{name: 'HE-119(改造)',	type: 'TE',	ke: 11,	ce: 11,	te: 221},
+			{name: 'SAKAKI mdl.1',	type: 'TE',	ke: 16,	ce: 15,	te: 209},
+			{name: 'SAKAKI mdl.1(改造)',	type: 'TE',	ke: 14,	ce: 65,	te: 201},
+			{name: 'Hd-H-E34',	type: 'TE',	ke: 30,	ce: 50,	te: 278},
+			{name: 'Hd-H-E34(改造)',	type: 'TE',	ke: 25,	ce: 41,	te: 262},
+			{name: 'H02 Scarlet',	type: 'TE',	ke: 56,	ce: 80,	te: 332},
+			{name: 'H02 Scarlet(改造)',	type: 'TE',	ke: 62,	ce: 82,	te: 358},
+			{name: 'H09 Snakeberry',	type: 'TE',	ke: 14,	ce: 23,	te: 105}
+		];
+		
+		let cores = [
+			{name: 'D/UCR-10',	type: 'KE',	ke: 723,	ce: 120,	te: 125},
+			{name: 'CB-116',	type: 'KE',	ke: 804,	ce: 145,	te: 162},
+			{name: 'CB-116(改造)',	type: 'KE',	ke: 774,	ce: 201,	te: 156},
+			{name: 'CA-127',	type: 'KE',	ke: 751,	ce: 138,	te: 145},
+			{name: 'CB-209',	type: 'KE',	ke: 876,	ce: 175,	te: 152},
+			{name: 'CB-209(改造)',	type: 'KE',	ke: 843,	ce: 256,	te: 141},
+			{name: 'CB-307',	type: 'KE',	ke: 768,	ce: 133,	te: 138},
+			{name: 'CB-402',	type: 'KE',	ke: 701,	ce: 125,	te: 130},
+			{name: 'CA-215',	type: 'KE',	ke: 825,	ce: 159,	te: 165},
+			{name: 'CA-215(改造)',	type: 'KE',	ke: 812,	ce: 213,	te: 145},
+			{name: 'CA-309',	type: 'KE',	ke: 726,	ce: 112,	te: 125},
+			{name: 'CA-309(改造)',	type: 'KE',	ke: 689,	ce: 97,	te: 105},
+			{name: 'C03 Malicious',	type: 'KE',	ke: 742,	ce: 95,	te: 158},
+			{name: 'C08 Matador',	type: 'KE',	ke: 782,	ce: 101,	te: 142},
+			{name: 'D/CR210',	type: 'CE',	ke: 268,	ce: 608,	te: 60},
+			{name: 'CC-121',	type: 'CE',	ke: 272,	ce: 582,	te: 53},
+			{name: 'CC-121(改造)',	type: 'CE',	ke: 253,	ce: 537,	te: 42},
+			{name: 'Co-D-S21',	type: 'CE',	ke: 282,	ce: 652,	te: 55},
+			{name: 'CC-208',	type: 'CE',	ke: 309,	ce: 698,	te: 75},
+			{name: 'CC-208(改造)',	type: 'CE',	ke: 315,	ce: 789,	te: 81},
+			{name: 'CC-312',	type: 'CE',	ke: 278,	ce: 492,	te: 91},
+			{name: 'Co-D-S29',	type: 'CE',	ke: 333,	ce: 860,	te: 93},
+			{name: 'Co-D-S29(改造)',	type: 'CE',	ke: 301,	ce: 794,	te: 208},
+			{name: 'Co-D-S44',	type: 'CE',	ke: 288,	ce: 613,	te: 98},
+			{name: 'TAMAKAZURA mdl.1',	type: 'CE',	ke: 251,	ce: 482,	te: 35},
+			{name: 'TAMAKAZURA mdl.1(改造)',	type: 'CE',	ke: 275,	ce: 499,	te: 46},
+			{name: 'TAMAKAZURA mdl.2',	type: 'CE',	ke: 291,	ce: 447,	te: 60},
+			{name: 'D/KT-1O3',	type: 'TE',	ke: 245,	ce: 61,	te: 551},
+			{name: 'MATSUKAZE mdl.1',	type: 'TE',	ke: 261,	ce: 78,	te: 608},
+			{name: 'Co-G-F24',	type: 'TE',	ke: 301,	ce: 85,	te: 552},
+			{name: 'MATSUKAZE mdl.2',	type: 'TE',	ke: 221,	ce: 62,	te: 482},
+			{name: 'MATSUKAZE mdl.3',	type: 'TE',	ke: 318,	ce: 93,	te: 783},
+			{name: 'MATSUKAZE mdl.3(改造)',	type: 'TE',	ke: 423,	ce: 88,	te: 685},
+			{name: 'Co-G-F11',	type: 'TE',	ke: 272,	ce: 52,	te: 502},
+			{name: 'Co-G-F37',	type: 'TE',	ke: 343,	ce: 110,	te: 743},
+			{name: 'Co-G-F37(改造)',	type: 'TE',	ke: 323,	ce: 251,	te: 696},
+			{name: 'Co-G-F42',	type: 'TE',	ke: 285,	ce: 87,	te: 528},
+			{name: 'Co-G-F42(改造)',	type: 'TE',	ke: 292,	ce: 92,	te: 508},
+			{name: 'C07 Mercury',	type: 'TE',	ke: 123,	ce: 25,	te: 676},
+			{name: 'C07 Mercury(改造)',	type: 'TE',	ke: 153,	ce: 28,	te: 682},
+			{name: 'C11 Monoceros',	type: 'TE',	ke: 253,	ce: 35,	te: 763}
+		];
+		
+		let arms = [
+			{name: 'D/UAM-10',	type: 'KE',	ke: 198,	ce: 22,	te: 40},
+			{name: 'AA-135',	type: 'KE',	ke: 306,	ce: 46,	te: 63},
+			{name: 'AA-135(改造)',	type: 'KE',	ke: 276,	ce: 106,	te: 41},
+			{name: 'AA-207L',	type: 'KE',	ke: 306,	ce: 46,	te: 63},
+			{name: 'Ar-P-C28',	type: 'KE',	ke: 260,	ce: 31,	te: 51},
+			{name: 'Ar-P-C30/L',	type: 'KE',	ke: 260,	ce: 31,	te: 51},
+			{name: 'Ar-P-C28(改造)',	type: 'KE',	ke: 222,	ce: 36,	te: 101},
+			{name: 'AB-107D',	type: 'KE',	ke: 362,	ce: 54,	te: 59},
+			{name: 'AB-107D(改造)',	type: 'KE',	ke: 374,	ce: 64,	te: 51},
+			{name: 'AB-216',	type: 'KE',	ke: 208,	ce: 26,	te: 41},
+			{name: 'Ar-P-K17',	type: 'KE',	ke: 195,	ce: 22,	te: 28},
+			{name: 'Ar-P-K17(改造)',	type: 'KE',	ke: 174,	ce: 19,	te: 22},
+			{name: 'UTSUSEMI mdl.1',	type: 'KE',	ke: 215,	ce: 32,	te: 32},
+			{name: 'UTSUSEMI mdl.2',	type: 'KE',	ke: 215,	ce: 32,	te: 32},
+			{name: 'UTSUSEMI mdl.3',	type: 'KE',	ke: 274,	ce: 42,	te: 48},
+			{name: 'UTSUSEMI mdl.4',	type: 'KE',	ke: 274,	ce: 42,	te: 48},
+			{name: 'UTSUSEMI mdl.4(改造)',	type: 'KE',	ke: 284,	ce: 39,	te: 42},
+			{name: 'D/AM29',	type: 'CE',	ke: 102,	ce: 402,	te: 29},
+			{name: 'Ar-M-E28',	type: 'CE',	ke: 131,	ce: 432,	te: 37},
+			{name: 'Ar-M-E34/L',	type: 'CE',	ke: 131,	ce: 432,	te: 37},
+			{name: 'Ar-M-E34/L(改造)',	type: 'CE',	ke: 156,	ce: 402,	te: 25},
+			{name: 'AC-129',	type: 'CE',	ke: 111,	ce: 396,	te: 45},
+			{name: 'AC-129(改造)',	type: 'CE',	ke: 103,	ce: 382,	te: 41},
+			{name: 'AC-202L',	type: 'CE',	ke: 111,	ce: 396,	te: 45},
+			{name: 'Ar-M-W17',	type: 'CE',	ke: 95,	ce: 382,	te: 26},
+			{name: 'Ar-M-W17(改造)',	type: 'CE',	ke: 102,	ce: 390,	te: 28},
+			{name: 'Ar-M-W22/L',	type: 'CE',	ke: 95,	ce: 382,	te: 26},
+			{name: 'Ar-M-W48',	type: 'CE',	ke: 125,	ce: 492,	te: 52},
+			{name: 'Ar-M-W48(改造)',	type: 'CE',	ke: 104,	ce: 531,	te: 40},
+			{name: 'Ar-M-W52/L',	type: 'CE',	ke: 125,	ce: 492,	te: 52},
+			{name: 'AE-118',	type: 'CE',	ke: 118,	ce: 453,	te: 40},
+			{name: 'AE-205L',	type: 'CE',	ke: 118,	ce: 453,	te: 40},
+			{name: 'AE-118(改造)',	type: 'CE',	ke: 51,	ce: 405,	te: 39},
+			{name: 'KOCHO mdl.1',	type: 'CE',	ke: 74,	ce: 385,	te: 32},
+			{name: 'KOCHO mdl.2',	type: 'CE',	ke: 82,	ce: 299,	te: 68},
+			{name: 'KOCHO mdl.2(改造)',	type: 'CE',	ke: 51,	ce: 329,	te: 66},
+			{name: 'D/KT-1S',	type: 'TE',	ke: 62,	ce: 49,	te: 302},
+			{name: 'AD-134',	type: 'TE',	ke: 91,	ce: 71,	te: 473},
+			{name: 'AGEMAKI mdl.1',	type: 'TE',	ke: 90,	ce: 56,	te: 403},
+			{name: 'AGEMAKI mdl.1(改造)',	type: 'TE',	ke: 82,	ce: 113,	te: 381},
+			{name: 'AGEMAKI mdl.2',	type: 'TE',	ke: 90,	ce: 56,	te: 403},
+			{name: 'AGEMAKI mdl.3',	type: 'TE',	ke: 85,	ce: 68,	te: 423},
+			{name: 'AGEMAKI mdl.3(改造)',	type: 'TE',	ke: 88,	ce: 71,	te: 436},
+			{name: 'AGEMAKI mdl.4',	type: 'TE',	ke: 76,	ce: 48,	te: 376},
+			{name: 'AGEMAKI mdl.5',	type: 'TE',	ke: 76,	ce: 48,	te: 376},
+			{name: 'AGEMAKI mdl.5(改造)',	type: 'TE',	ke: 71,	ce: 44,	te: 362},
+			{name: 'AD-228',	type: 'TE',	ke: 104,	ce: 77,	te: 482},
+			{name: 'AD-228(改造)',	type: 'TE',	ke: 92,	ce: 113,	te: 461},
+			{name: 'Ar-A-A51',	type: 'TE',	ke: 43,	ce: 21,	te: 352},
+			{name: 'Ar-A-A51/L',	type: 'TE',	ke: 43,	ce: 21,	te: 352},
+			{name: 'Ar-A-A76',	type: 'TE',	ke: 52,	ce: 23,	te: 385},
+			{name: 'Ar-A-A76/L',	type: 'TE',	ke: 52,	ce: 23,	te: 385},
+			{name: 'Ar-A-A76/L(改造)',	type: 'TE',	ke: 58,	ce: 35,	te: 351},
+			{name: 'A11 Vendetta',	type: '武器腕',	ke: 189,	ce: 18,	te: 32},
+			{name: 'A03 Valiant',	type: '武器腕',	ke: 28,	ce: 126,	te: 11},
+			{name: 'A04 Vampire',	type: '武器腕',	ke: 28,	ce: 126,	te: 11},
+			{name: 'A08 Venom',	type: '武器腕',	ke: 31,	ce: 138,	te: 8},
+			{name: 'A09 Vipera',	type: '武器腕',	ke: 31,	ce: 138,	te: 8},
+			{name: 'Wa-V-P03',	type: '武器腕',	ke: 23,	ce: 7,	te: 165},
+			{name: 'Wa-V-P08',	type: '武器腕',	ke: 24,	ce: 8,	te: 195},
+			{name: 'Wa-V-S11',	type: '武器腕',	ke: 136,	ce: 7,	te: 30},
+			{name: 'Wa-V-S17',	type: '武器腕',	ke: 181,	ce: 8,	te: 41},
+			{name: 'MINORI mdl.1',	type: '武器腕',	ke: 19,	ce: 5,	te: 215},
+			{name: 'MINORI mdl.2',	type: '武器腕',	ke: 29,	ce: 10,	te: 231},
+			{name: 'KASHIWAGI mdl.1',	type: '武器腕',	ke: 14,	ce: 4,	te: 86},
+			{name: 'KASHIWAGI mdl.2',	type: '武器腕',	ke: 14,	ce: 4,	te: 86},
+			{name: 'YADORIGI mdl.1',	type: '武器腕',	ke: 15,	ce: 5,	te: 71},
+			{name: 'YADORIGI mdl.2',	type: '武器腕',	ke: 15,	ce: 5,	te: 71},
+			{name: 'WAB-219',	type: '武器腕',	ke: 13,	ce: 82,	te: 6},
+			{name: 'WAA-145',	type: '武器腕',	ke: 41,	ce: 30,	te: 165},
+			{name: 'WAB-123',	type: '武器腕',	ke: 52,	ce: 32,	te: 193}
+		];
+		
+		let legs = [
+			{name: 'L2LA-142',	type: '軽二',	ke: 925,	ce: 149,	te: 304},
+			{name: 'L2LA-142(改造)',	type: '軽二',	ke: 810,	ce: 389,	te: 216},
+			{name: 'L2LB-129',	type: '軽二',	ke: 515,	ce: 92,	te: 258},
+			{name: 'L2LB-215',	type: '軽二',	ke: 382,	ce: 68,	te: 231},
+			{name: 'L2LB-215(改造)',	type: '軽二',	ke: 371,	ce: 42,	te: 214},
+			{name: 'Le2L-B-V15',	type: '軽二',	ke: 365,	ce: 55,	te: 245},
+			{name: 'Le2L-B-V15(改造)',	type: '軽二',	ke: 386,	ce: 63,	te: 226},
+			{name: 'NOWAKI mdl.1',	type: '軽二',	ke: 458,	ce: 22,	te: 268},
+			{name: 'NOWAKI mdl.2',	type: '軽二',	ke: 669,	ce: 68,	te: 294},
+			{name: 'NOWAKI mdl.2(改造)',	type: '軽二',	ke: 512,	ce: 199,	te: 105},
+			{name: 'D/ULG-10',	type: '中二',	ke: 1272,	ce: 218,	te: 325},
+			{name: 'L2MA-131',	type: '中二',	ke: 1588,	ce: 284,	te: 451},
+			{name: 'L2MA-131(改造)',	type: '中二',	ke: 1622,	ce: 296,	te: 405},
+			{name: 'Le2M-D-F24',	type: '中二',	ke: 1246,	ce: 209,	te: 331},
+			{name: 'Le2M-D-F24(改造)',	type: '中二',	ke: 1224,	ce: 198,	te: 301},
+			{name: 'Le2M-T-W17',	type: '中二',	ke: 1383,	ce: 258,	te: 361},
+			{name: 'L2MA-227',	type: '中二',	ke: 1458,	ce: 272,	te: 426},
+			{name: 'L2MB-122',	type: '中二',	ke: 1198,	ce: 198,	te: 303},
+			{name: 'L2MB-122(改造)',	type: '中二',	ke: 1154,	ce: 174,	te: 285},
+			{name: 'Le2M-D-F02',	type: '中二',	ke: 1304,	ce: 223,	te: 344},
+			{name: 'Le2M-T-W22',	type: '中二',	ke: 1520,	ce: 262,	te: 382},
+			{name: 'Le2M-T-W30',	type: '中二',	ke: 1491,	ce: 312,	te: 436},
+			{name: 'Le2M-T-W30(改造)',	type: '中二',	ke: 1289,	ce: 653,	te: 256},
+			{name: 'L03 FreQuency',	type: '中二',	ke: 1406,	ce: 305,	te: 367},
+			{name: 'L18 Fragrant',	type: '中二',	ke: 1368,	ce: 287,	te: 321},
+			{name: 'D/KT-3N2',	type: '重二',	ke: 692,	ce: 1022,	te: 2602},
+			{name: 'AOI mdl.1',	type: '重二',	ke: 722,	ce: 1091,	te: 2874},
+			{name: 'L2HA-118',	type: '重二',	ke: 391,	ce: 955,	te: 2259},
+			{name: 'Le2H-J-E08',	type: '重二',	ke: 415,	ce: 1032,	te: 2516},
+			{name: 'AOI mdl.2',	type: '重二',	ke: 661,	ce: 1041,	te: 2712},
+			{name: 'AOI mdl.2(改造)',	type: '重二',	ke: 682,	ce: 944,	te: 2607},
+			{name: 'L2HA-213',	type: '重二',	ke: 416,	ce: 915,	te: 2398},
+			{name: 'L2HA-307',	type: '重二',	ke: 352,	ce: 878,	te: 2163},
+			{name: 'L2HA-307(改造)',	type: '重二',	ke: 368,	ce: 1005,	te: 2217},
+			{name: 'Le2H-J-E13',	type: '重二',	ke: 475,	ce: 1362,	te: 2488},
+			{name: 'Le2H-J-E13(改造)',	type: '重二',	ke: 584,	ce: 1401,	te: 2475},
+			{name: 'Le2H-J-E34',	type: '重二',	ke: 381,	ce: 984,	te: 2403},
+			{name: 'L06 Fever',	type: '重二',	ke: 898,	ce: 658,	te: 2658},
+			{name: 'L14 Flame',	type: '重二',	ke: 935,	ce: 702,	te: 2725},
+			{name: 'L14 Flame(改造)',	type: '重二',	ke: 605,	ce: 748,	te: 2697},
+			{name: 'LRLA-121',	type: '軽逆',	ke: 956,	ce: 108,	te: 304},
+			{name: 'LRLA-121(改造)',	type: '軽逆',	ke: 1056,	ce: 115,	te: 247},
+			{name: 'SAWARABI mdl.1',	type: '軽逆',	ke: 582,	ce: 62,	te: 171},
+			{name: 'SAWARABI mdl.1(改造)',	type: '軽逆',	ke: 571,	ce: 52,	te: 194},
+			{name: 'LRLB-111',	type: '軽逆',	ke: 692,	ce: 74,	te: 198},
+			{name: 'LRLB-111(改造)',	type: '軽逆',	ke: 663,	ce: 62,	te: 188},
+			{name: 'L05 Fisherman',	type: '軽逆',	ke: 558,	ce: 52,	te: 168},
+			{name: 'L24 Forehead',	type: '軽逆',	ke: 985,	ce: 168,	te: 257},
+			{name: 'L24 Forehead(改造)',	type: '軽逆',	ke: 931,	ce: 201,	te: 687},
+			{name: 'D/LG209',	type: '重逆',	ke: 478,	ce: 1189,	te: 60},
+			{name: 'TAKEKAWA mdl.1',	type: '重逆',	ke: 553,	ce: 1356,	te: 66},
+			{name: 'TAKEKAWA mdl.1(改造)',	type: '重逆',	ke: 539,	ce: 1547,	te: 58},
+			{name: 'TAKEKAWA mdl.2',	type: '重逆',	ke: 446,	ce: 1487,	te: 72},
+			{name: 'FUJIBAKAMA mdl.1',	type: '重逆',	ke: 826,	ce: 2002,	te: 211},
+			{name: 'LRHA-123',	type: '重逆',	ke: 909,	ce: 1830,	te: 88},
+			{name: 'LRHA-123(改造)',	type: '重逆',	ke: 984,	ce: 1875,	te: 63},
+			{name: 'FUJIBAKAMA mdl.2',	type: '重逆',	ke: 806,	ce: 2338,	te: 133},
+			{name: 'FUJIBAKAMA mdl.3',	type: '重逆',	ke: 671,	ce: 1901,	te: 102},
+			{name: 'FUJIBAKAMA mdl.3(改造)',	type: '重逆',	ke: 691,	ce: 2203,	te: 95},
+			{name: 'LRHB-114',	type: '重逆',	ke: 701,	ce: 2187,	te: 115},
+			{name: 'LeR-U-B24',	type: '重逆',	ke: 505,	ce: 1624,	te: 185},
+			{name: 'LeR-U-B29',	type: '重逆',	ke: 565,	ce: 1856,	te: 207},
+			{name: 'LeR-U-B29(改造)',	type: '重逆',	ke: 609,	ce: 1903,	te: 184},
+			{name: 'D/LG665',	type: '四脚',	ke: 531,	ce: 2254,	te: 199},
+			{name: 'UKIFUNE mdl.1',	type: '四脚',	ke: 582,	ce: 2555,	te: 254},
+			{name: 'L4A-119',	type: '四脚',	ke: 488,	ce: 2141,	te: 151},
+			{name: 'L4A-119(改造)',	type: '四脚',	ke: 478,	ce: 2312,	te: 105},
+			{name: 'UKIFUNE mdl.2',	type: '四脚',	ke: 682,	ce: 2452,	te: 212},
+			{name: 'UKIFUNE mdl.3',	type: '四脚',	ke: 925,	ce: 2358,	te: 185},
+			{name: 'UKIFUNE mdl.3(改造)',	type: '四脚',	ke: 943,	ce: 2247,	te: 164},
+			{name: 'YOMOGIU mdl.1',	type: '四脚',	ke: 593,	ce: 2213,	te: 115},
+			{name: 'YOMOGIU mdl.1(改造)',	type: '四脚',	ke: 623,	ce: 2301,	te: 135},
+			{name: 'L4B-107',	type: '四脚',	ke: 391,	ce: 1905,	te: 82},
+			{name: 'L11 Fearless',	type: '四脚',	ke: 498,	ce: 1879,	te: 52},
+			{name: 'L11 Fearless(改造)',	type: '四脚',	ke: 518,	ce: 1936,	te: 41},
+			{name: 'L20 Foal',	type: '四脚',	ke: 667,	ce: 2147,	te: 152},
+			{name: 'D/KT-1N',	type: 'タンク',	ke: 805,	ce: 986,	te: 2517},
+			{name: 'LTA-122',	type: 'タンク',	ke: 914,	ce: 1117,	te: 2708},
+			{name: 'LeT-A-D09',	type: 'タンク',	ke: 892,	ce: 1411,	te: 3255},
+			{name: 'LeT-A-D09(改造)',	type: 'タンク',	ke: 1014,	ce: 1634,	te: 2754},
+			{name: 'LeT-A-D14',	type: 'タンク',	ke: 999,	ce: 1546,	te: 3589},
+			{name: 'LeT-A-D14(改造)',	type: 'タンク',	ke: 1118,	ce: 1472,	te: 3052},
+			{name: 'LeT-A-D34',	type: 'タンク',	ke: 872,	ce: 1213,	te: 2987},
+			{name: 'LeT-A-D47',	type: 'タンク',	ke: 974,	ce: 1442,	te: 3108},
+			{name: 'LTB-105',	type: 'タンク',	ke: 734,	ce: 988,	te: 2607},
+			{name: 'LTB-105(改造)',	type: 'タンク',	ke: 809,	ce: 1056,	te: 2401},
+			{name: 'L08 Foolish',	type: 'タンク',	ke: 653,	ce: 905,	te: 2488},
+			{name: 'L08 Foolish(改造)',	type: 'タンク',	ke: 687,	ce: 1251,	te: 2218},
+			{name: 'L22 Funeral',	type: 'タンク',	ke: 796,	ce: 1096,	te: 2752}
+		];
+		
+		window.onload = function(){
+			let funcMap = {};
+			funcMap['is-bigger'] = [updateSelectBoxDisabled, search];
+			funcMap['is-equals'] = [updateSelectBoxDisabled, search];
+			funcMap['ke'] = [search];
+			funcMap['ce'] = [search];
+			funcMap['te'] = [search];
+			funcMap['head-type'] = [updateHeadOptions, search];
+			funcMap['head-name'] = [search];
+			funcMap['core-type'] = [updateCoreOptions, search]
+			funcMap['core-name'] = [search];
+			funcMap['arms-type'] = [updateArmOptions, search];
+			funcMap['arms-name'] = [search];
+			funcMap['legs-type'] = [updateLegOptions, search];
+			funcMap['legs-name'] = [search];
+			
+			for(let [id, funcs] of Object.entries( funcMap)){
+				let func = () => funcs.forEach(f => f());
+				document.getElementById(id).onchange = func;
+			}
+		}
+		
+		function updateSelectBoxDisabled(){
+			let isAvailable = document.getElementById('is-bigger').checked;
+			let selects = [ ... document.getElementsByTagName('select')];
+			selects.forEach( element => element.disabled = ! isAvailable);
+		}
+		
+		function updateHeadOptions(){
+			updateOptions('head-type', 'head-name', heads);
+		}
+		
+		function updateCoreOptions(){
+			updateOptions('core-type', 'core-name', cores);
+		}
+		
+		function updateArmOptions(){
+			updateOptions('arms-type', 'arms-name', arms);
+		}
+		
+		function updateLegOptions(){
+			updateOptions('legs-type', 'legs-name', legs);
+		}
+		
+		function updateOptions(typeId, nameId, parts){
+			let type = document.getElementById(typeId);
+			let filteredParts = parts.filter(part => part.type == type.value);
+			
+			let name = document.getElementById(nameId);
+			while(name.firstChild){
+				name.removeChild(name.firstChild);
+			}
+			
+			let blank = document.createElement('option');
+			blank.text = '-';
+			blank.value = '';
+			name.appendChild(blank);
+			
+			filteredParts.forEach(part => {
+				let option = document.createElement('option');
+				option.text = part.name;
+				option.value = part.name;
+				name.appendChild(option);
+			});
+		}
+		
+		function search(){
+			let announce = document.getElementById('announce');
+			announce.value = '検索中...';
+			
+			let isBigger = document.getElementById('is-bigger').checked;
+			let ke = document.getElementById('ke').value;
+			let ce = document.getElementById('ce').value;
+			let te = document.getElementById('te').value;
+			let headType = document.getElementById('head-type').value;
+			let headName = document.getElementById('head-name').value;
+			let coreType = document.getElementById('core-type').value;
+			let coreName = document.getElementById('core-name').value;
+			let armType  = document.getElementById('arms-type').value;
+			let armName  = document.getElementById('arms-name').value;
+			let legType  = document.getElementById('legs-type').value;
+			let legName  = document.getElementById('legs-name').value;
+			
+			let isMatched = (part, type, name) => name ? part.name == name : !type || part.type == type;
+			let filteredHeads = isBigger ? heads.filter(head => isMatched(head, headType, headName)) : heads;
+			let filteredCores = isBigger ? cores.filter(core => isMatched(core, coreType, coreName)) : cores;
+			let filteredArms  = isBigger ? arms.filter( arm  => isMatched(arm,  armType,  armName )) : arms;
+			let filteredLegs  = isBigger ? legs.filter( leg  => isMatched(leg,  legType,  legName )) : legs;
+			
+			let results = getResults(filteredHeads, filteredCores, filteredArms, filteredLegs, {ke, ce, te}, isBigger);
+			
+			let table = document.getElementById('result-table');
+			while(table.firstChild){
+				table.removeChild(table.firstChild);
+			}
+			
+			results.forEach(result => {
+				let create = (tag, className, text) => {
+					let element = document.createElement(tag);
+					element.classList.add(className);
+					element.innerHTML = text;
+					return element;
+				};
+				
+				let ke = create('td', 'right', result.ke);
+				let ce = create('td', 'right', result.ce);
+				let te = create('td', 'right', result.te);
+				let head = create('div', 'parts-type-and-name', result.head.type + ' ' + result.head.name);
+				let core = create('div', 'parts-type-and-name', result.core.type + ' ' + result.core.name);
+				let arm  = create('div', 'parts-type-and-name', result.arm.type  + ' ' + result.arm.name);
+				let leg  = create('div', 'parts-type-and-name', result.leg.type  + ' ' + result.leg.name);
+				
+				let parts = document.createElement('td');
+				parts.classList.add('box');
+				[head, core, arm, leg].forEach(e => parts.appendChild(e));
+				
+				let tr = document.createElement('tr');
+				[ke, ce, te, parts].forEach(e => tr.appendChild(e));
+				
+				table.appendChild(tr);
+			});
+			
+			announce.value = results.length + '件の一致';
+		}
+		
+		function getResults(heads, cores, arms, legs, defenses, isBigger){
+			let results = [];
+			for(let head of heads){
+				for(let core of cores){
+					for(let arm of arms){
+						for(let leg of legs){
+							let ke = head.ke + core.ke + arm.ke + leg.ke;
+							let ce = head.ce + core.ce + arm.ce + leg.ce;
+							let te = head.te + core.te + arm.te + leg.te;
+							if(isBigger){
+								if(ke > defenses.ke && ce > defenses.ce && te > defenses.te){
+									results.push({ke, ce, te, head, core, arm, leg});
+								}
+							}
+							else{
+								if(ke == defenses.ke && ce == defenses.ce && te == defenses.te){
+									results.push({ke, ce, te, head, core, arm, leg});
+								}
+							}
+							if(results.length >= 100){
+								return results;
+							}
+						}
+					}
+				}
+			}
+			return results;
+		}
+		
+	</script>
+</head>
+
+<body>
+	<h1>ACVDアセン検索</h1>
+	
+	<p>
+		<ul>
+			<li>
+				<input type="radio" name="mode" id="is-bigger" checked>
+				<label for="is-bigger">防御値より大きいアセンを検索</label>
+			</li>
+			<li>
+				<input type="radio" name="mode" id="is-equals">
+				<label for="is-equals">防御値と同じアセンを検索</label>
+			</li>
+		</ul>
+	</p>
+	
+	<p>
+		<table>
+			<tr>
+				<td>KE</td>
+				<td>
+					<input type="number" min="0" max="9999" value="0" id="ke" class="right">
+				</td>
+			</tr>
+			<tr>
+				<td>CE</td>
+				<td>
+					<input type="number" min="0" max="9999" value="0" id="ce" class="right">
+				</td>
+			</tr>
+			<tr>
+				<td>TE</td>
+				<td>
+					<input type="number" min="0" max="9999" value="0" id="te" class="right">
+				</td>
+			</tr>
+			<tr>
+				<td>HEAD</td>
+				<td class="box">
+					<select id="head-type" class="parts-type">
+						<option value="">-</option>
+						<option value="KE">KE</option>
+						<option value="CE">CE</option>
+						<option value="TE">TE</option>
+					</select>
+					<select id="head-name" class="parts-name">
+						<option value="">-</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>CORE</td>
+				<td class="box">
+					<select id="core-type" class="parts-type">
+						<option value="">-</option>
+						<option value="KE">KE</option>
+						<option value="CE">CE</option>
+						<option value="TE">TE</option>
+					</select>
+					<select id="core-name" class="parts-name">
+						<option value="">-</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>ARMS</td>
+				<td class="box">
+					<select id="arms-type" class="parts-type">
+						<option value="">-</option>
+						<option value="KE">KE</option>
+						<option value="CE">CE</option>
+						<option value="TE">TE</option>
+						<option value="武器腕">武器腕</option>
+					</select>
+					<select id="arms-name" class="parts-name">
+						<option value="">-</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>LEGS</td>
+				<td class="box">
+					<select id="legs-type" class="parts-type">
+						<option value="">-</option>
+						<option value="軽二">軽二</option>
+						<option value="中二">中二</option>
+						<option value="重二">重二</option>
+						<option value="軽逆">軽逆</option>
+						<option value="重逆">重逆</option>
+						<option value="四脚">四脚</option>
+						<option value="タンク">タンク</option>
+					</select>
+					<select id="legs-name" class="parts-name">
+						<option value="">-</option>
+					</select>
+				</td>
+			</tr>
+		</table>
+	</p>
+	
+	<p>
+		<input id="announce" type="text" disabled>
+	</p>
+	
+	<p>
+		<table border="1">
+			<thead>
+				<tr>
+					<th>KE</th>
+					<th>CE</th>
+					<th>TE</th>
+					<th class="box">
+						<div class="parts-type-and-name">HEAD</div>
+						<div class="parts-type-and-name">CORE</div>
+						<div class="parts-type-and-name">ARMS</div>
+						<div class="parts-type-and-name">LEGS</div>
+					</th>
+				</tr>
+			</thead>
+			<tbody id="result-table">
+			</tbody>
+		</table>
+	</p>
+</body>
+
+</html>
