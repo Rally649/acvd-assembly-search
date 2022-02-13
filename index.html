@@ -22,6 +22,9 @@
 		.right {
 			text-align: right;
 		}
+		.hidden {
+			display: none;
+		}
 		.parts-type {
 			width: 5.0rem;
 		}
@@ -294,160 +297,203 @@
 			{name: 'L22 Funeral',	type: 'タンク',	ke: 796,	ce: 1096,	te: 2752}
 		];
 		
+		const ROWS_MAX = 100;
+		
+		let headOptions = [];
+		let coreOptions = [];
+		let armOptions = [];
+		let legOptions = [];
+		let records = [];
+		
 		window.onload = function(){
-			let funcMap = {};
-			funcMap['is-bigger'] = [updateSelectBoxDisabled, search];
-			funcMap['is-equals'] = [updateSelectBoxDisabled, search];
-			funcMap['ke'] = [search];
-			funcMap['ce'] = [search];
-			funcMap['te'] = [search];
-			funcMap['head-type'] = [updateHeadOptions, search];
-			funcMap['head-name'] = [search];
-			funcMap['core-type'] = [updateCoreOptions, search]
-			funcMap['core-name'] = [search];
-			funcMap['arms-type'] = [updateArmOptions, search];
-			funcMap['arms-name'] = [search];
-			funcMap['legs-type'] = [updateLegOptions, search];
-			funcMap['legs-name'] = [search];
-			
-			for(let [id, funcs] of Object.entries( funcMap)){
-				let func = () => funcs.forEach(f => f());
-				document.getElementById(id).onchange = func;
+			function setEvents(){
+				let setFunctions = (id, ...funcs) => document.getElementById(id).onchange= () => funcs.forEach(f => f());
+				
+				let updateHeadOptions = () => updateOptions('head-type', headOptions);
+				let updateCoreOptions = () => updateOptions('core-type', coreOptions);
+				let updateArmOptions  = () => updateOptions('arms-type', armOptions);
+				let updateLegOptions  = () => updateOptions('legs-type', legOptions);
+				
+				setFunctions('is-bigger', updateSelectBoxDisabled, search);
+				setFunctions('is-equals', updateSelectBoxDisabled, search);
+				setFunctions('ke', search);
+				setFunctions('ce', search);
+				setFunctions('te', search);
+				setFunctions('head-type', updateHeadOptions, search);
+				setFunctions('head-name', search);
+				setFunctions('core-type', updateCoreOptions, search);
+				setFunctions('core-name', search);
+				setFunctions('arms-type', updateArmOptions, search);
+				setFunctions('arms-name', search);
+				setFunctions('legs-type', updateLegOptions, search);
+				setFunctions('legs-name', search);
 			}
+			
+			function createOptions(parts){
+				let create = (text, value) =>{
+					let option = document.createElement('option');
+					option.text = text;
+					option.value = value;
+					return option;
+				};
+				
+				let options = [];
+				
+				let blank = create('-', '');
+				options.push({type: '', element: blank});
+				
+				parts.forEach(part => {
+					let option = create(part.name, part.name);
+					option.classList.add('hidden');
+					options.push({type: part.type, element: option});
+				});
+				
+				return options;
+			}
+			
+			function createEmptyRecords(){
+				let records = [];
+				for(let i = 0; i < ROWS_MAX; i++){
+					let create = (tag, cls) => {
+						let element = document.createElement(tag);
+						element.classList.add(cls);
+						return element;
+					};
+					
+					let row = create('tr', 'hidden');
+					let ke = create('td', 'right');
+					let ce = create('td', 'right');
+					let te = create('td', 'right');
+					let parts = create('td', 'box');
+					let head = create('div', 'parts-type-and-name');
+					let core = create('div', 'parts-type-and-name');
+					let arm  = create('div', 'parts-type-and-name');
+					let leg  = create('div', 'parts-type-and-name');
+					
+					[ke, ce, te, parts].forEach(e => row.appendChild(e));
+					[head, core, arm, leg].forEach(e => parts.appendChild(e));
+					
+					records.push({row, ke, ce, te, head, core, arm, leg});
+				}
+				return records;
+			}
+			
+			setEvents();
+			
+			let append = (id, values) => values.forEach(value => document.getElementById(id).appendChild(value));
+			
+			headOptions = createOptions(heads);
+			append('head-name', headOptions.map(option => option.element));
+			
+			coreOptions = createOptions(cores);
+			append('core-name', coreOptions.map(option => option.element));
+			
+			armOptions  = createOptions(arms);
+			append('arms-name', armOptions.map(option => option.element));
+			
+			legOptions  = createOptions(legs);
+			append('legs-name', legOptions.map(option => option.element));
+			
+			records = createEmptyRecords();
+			append('result-table', records.map(record => record.row));
 		}
 		
 		function updateSelectBoxDisabled(){
 			let isAvailable = document.getElementById('is-bigger').checked;
-			let selects = [ ... document.getElementsByTagName('select')];
+			let selects = [...document.getElementsByTagName('select')];
 			selects.forEach( element => element.disabled = ! isAvailable);
 		}
 		
-		function updateHeadOptions(){
-			updateOptions('head-type', 'head-name', heads);
-		}
-		
-		function updateCoreOptions(){
-			updateOptions('core-type', 'core-name', cores);
-		}
-		
-		function updateArmOptions(){
-			updateOptions('arms-type', 'arms-name', arms);
-		}
-		
-		function updateLegOptions(){
-			updateOptions('legs-type', 'legs-name', legs);
-		}
-		
-		function updateOptions(typeId, nameId, parts){
-			let type = document.getElementById(typeId);
-			let filteredParts = parts.filter(part => part.type == type.value);
-			
-			let name = document.getElementById(nameId);
-			while(name.firstChild){
-				name.removeChild(name.firstChild);
-			}
-			
-			let blank = document.createElement('option');
-			blank.text = '-';
-			blank.value = '';
-			name.appendChild(blank);
-			
-			filteredParts.forEach(part => {
-				let option = document.createElement('option');
-				option.text = part.name;
-				option.value = part.name;
-				name.appendChild(option);
+		function updateOptions(typeId, options){
+			let type = document.getElementById(typeId).value;
+			options.filter((option, i) => i > 0).forEach(option => {
+				if(option.type == type){
+					option.element.classList.remove('hidden');
+				}
+				else{
+					option.element.classList.add('hidden');
+				}
 			});
+			options[0].element.selected = true;
 		}
 		
 		function search(){
-			let announce = document.getElementById('announce');
-			announce.value = '検索中...';
-			
-			let isBigger = document.getElementById('is-bigger').checked;
-			let ke = document.getElementById('ke').value;
-			let ce = document.getElementById('ce').value;
-			let te = document.getElementById('te').value;
-			let headType = document.getElementById('head-type').value;
-			let headName = document.getElementById('head-name').value;
-			let coreType = document.getElementById('core-type').value;
-			let coreName = document.getElementById('core-name').value;
-			let armType  = document.getElementById('arms-type').value;
-			let armName  = document.getElementById('arms-name').value;
-			let legType  = document.getElementById('legs-type').value;
-			let legName  = document.getElementById('legs-name').value;
-			
-			let isMatched = (part, type, name) => name ? part.name == name : !type || part.type == type;
-			let filteredHeads = isBigger ? heads.filter(head => isMatched(head, headType, headName)) : heads;
-			let filteredCores = isBigger ? cores.filter(core => isMatched(core, coreType, coreName)) : cores;
-			let filteredArms  = isBigger ? arms.filter( arm  => isMatched(arm,  armType,  armName )) : arms;
-			let filteredLegs  = isBigger ? legs.filter( leg  => isMatched(leg,  legType,  legName )) : legs;
-			
-			let results = getResults(filteredHeads, filteredCores, filteredArms, filteredLegs, {ke, ce, te}, isBigger);
-			
-			let table = document.getElementById('result-table');
-			while(table.firstChild){
-				table.removeChild(table.firstChild);
+			function getTerms(){
+				let isBigger = document.getElementById('is-bigger').checked;
+				let ke = document.getElementById('ke').value;
+				let ce = document.getElementById('ce').value;
+				let te = document.getElementById('te').value;
+				let headType = document.getElementById('head-type').value;
+				let headName = document.getElementById('head-name').value;
+				let coreType = document.getElementById('core-type').value;
+				let coreName = document.getElementById('core-name').value;
+				let armType  = document.getElementById('arms-type').value;
+				let armName  = document.getElementById('arms-name').value;
+				let legType  = document.getElementById('legs-type').value;
+				let legName  = document.getElementById('legs-name').value;
+				
+				let isSelected = (part, type, name) => name ? part.name == name : !type || part.type == type;
+				let selectedHeads = isBigger ? heads.filter(head => isSelected(head, headType, headName)) : heads;
+				let selectedCores = isBigger ? cores.filter(core => isSelected(core, coreType, coreName)) : cores;
+				let selectedArms  = isBigger ? arms.filter( arm  => isSelected(arm,  armType,  armName )) : arms;
+				let selectedLegs  = isBigger ? legs.filter( leg  => isSelected(leg,  legType,  legName )) : legs;
+				
+				let isMatched = isBigger ?
+					(ke_, ce_, te_) => ke_ >  ke && ce_ >  ce && te_ >  te:
+					(ke_, ce_, te_) => ke_ == ke && ce_ == ce && te_ == te;
+				
+				let terms = {
+					heads: selectedHeads,
+					cores: selectedCores,
+					arms:  selectedArms,
+					legs:  selectedLegs,
+					isMatched: isMatched
+				};
+				return terms;
 			}
 			
-			results.forEach(result => {
-				let create = (tag, className, text) => {
-					let element = document.createElement(tag);
-					element.classList.add(className);
-					element.innerHTML = text;
-					return element;
-				};
-				
-				let ke = create('td', 'right', result.ke);
-				let ce = create('td', 'right', result.ce);
-				let te = create('td', 'right', result.te);
-				let head = create('div', 'parts-type-and-name', result.head.type + ' ' + result.head.name);
-				let core = create('div', 'parts-type-and-name', result.core.type + ' ' + result.core.name);
-				let arm  = create('div', 'parts-type-and-name', result.arm.type  + ' ' + result.arm.name);
-				let leg  = create('div', 'parts-type-and-name', result.leg.type  + ' ' + result.leg.name);
-				
-				let parts = document.createElement('td');
-				parts.classList.add('box');
-				[head, core, arm, leg].forEach(e => parts.appendChild(e));
-				
-				let tr = document.createElement('tr');
-				[ke, ce, te, parts].forEach(e => tr.appendChild(e));
-				
-				table.appendChild(tr);
-			});
-			
-			announce.value = results.length + '件の一致';
-		}
-		
-		function getResults(heads, cores, arms, legs, defenses, isBigger){
-			let results = [];
-			for(let head of heads){
-				for(let core of cores){
-					for(let arm of arms){
-						for(let leg of legs){
-							let ke = head.ke + core.ke + arm.ke + leg.ke;
-							let ce = head.ce + core.ce + arm.ce + leg.ce;
-							let te = head.te + core.te + arm.te + leg.te;
-							if(isBigger){
-								if(ke > defenses.ke && ce > defenses.ce && te > defenses.te){
+			function getResults(terms){
+				let results = [];
+				for(let head of terms.heads){
+					for(let core of terms.cores){
+						for(let arm of terms.arms){
+							for(let leg of terms.legs){
+								let ke = head.ke + core.ke + arm.ke + leg.ke;
+								let ce = head.ce + core.ce + arm.ce + leg.ce;
+								let te = head.te + core.te + arm.te + leg.te;
+								if(terms.isMatched(ke, ce, te)){
 									results.push({ke, ce, te, head, core, arm, leg});
+									if(results.length >= ROWS_MAX){
+										return results;
+									}
 								}
-							}
-							else{
-								if(ke == defenses.ke && ce == defenses.ce && te == defenses.te){
-									results.push({ke, ce, te, head, core, arm, leg});
-								}
-							}
-							if(results.length >= 100){
-								return results;
 							}
 						}
 					}
 				}
+				return results;
 			}
-			return results;
+			
+			let announce = document.getElementById('announce');
+			announce.value = '検索中...';
+			
+			records.forEach(record => record.row.classList.add('hidden'));
+			
+			let terms = getTerms();
+			let results = getResults(terms);
+			results.forEach((result, i) => {
+				records[i].ke.innerHTML = result.ke;
+				records[i].ce.innerHTML = result.ce;
+				records[i].te.innerHTML = result.te;
+				records[i].head.innerHTML = result.head.type + ' ' + result.head.name;
+				records[i].core.innerHTML = result.core.type + ' ' + result.core.name;
+				records[i].arm.innerHTML  = result.arm.type  + ' ' + result.arm.name;
+				records[i].leg.innerHTML  = result.leg.type  + ' ' + result.leg.name;
+				records[i].row.classList.remove('hidden');
+			});
+			
+			announce.value = results.length + '件の一致';
 		}
-		
 	</script>
 </head>
 
@@ -497,7 +543,6 @@
 						<option value="TE">TE</option>
 					</select>
 					<select id="head-name" class="parts-name">
-						<option value="">-</option>
 					</select>
 				</td>
 			</tr>
@@ -511,7 +556,6 @@
 						<option value="TE">TE</option>
 					</select>
 					<select id="core-name" class="parts-name">
-						<option value="">-</option>
 					</select>
 				</td>
 			</tr>
@@ -526,7 +570,6 @@
 						<option value="武器腕">武器腕</option>
 					</select>
 					<select id="arms-name" class="parts-name">
-						<option value="">-</option>
 					</select>
 				</td>
 			</tr>
@@ -544,7 +587,6 @@
 						<option value="タンク">タンク</option>
 					</select>
 					<select id="legs-name" class="parts-name">
-						<option value="">-</option>
 					</select>
 				</td>
 			</tr>
