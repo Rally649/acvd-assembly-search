@@ -379,7 +379,11 @@
 				
 				function reset(){
 					let defenses = ['ke', 'ce', 'te'];
-					defenses.forEach(id => document.getElementById(id).value = '');
+					defenses.forEach(id => {
+						let defense = document.getElementById(id);
+						defense.value = '';
+						defense.disabled = false;
+					});
 					
 					let suggests = [
 						'ke-suggest', 'ce-suggest', 'te-suggest',
@@ -387,6 +391,12 @@
 						'head-name', 'core-name', 'arms-name', 'legs-name'
 					];
 					suggests.forEach(id => document.getElementById(id).children[0].selected = true);
+					
+					records.forEach(record => {
+						let columns = ['ke', 'ce', 'te', 'head', 'core', 'arm', 'leg'];
+						columns.forEach(column => record[column].innerHTML = '');
+						record.row.classList.add('hidden');
+					});
 				}
 				
 				let onchange = (id, ...funcs) => document.getElementById(id).onchange = () => funcs.forEach(f => f());
