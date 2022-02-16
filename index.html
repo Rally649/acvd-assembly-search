@@ -3,6 +3,7 @@
 <head>
 	<title>ACVDアセン検索</title>
 	<meta name="viewport" content="width=device-width,initial-scale=1.0">
+	
 	<style>
 		* {
 			white-space: nowrap;
@@ -19,21 +20,36 @@
 			flex-wrap: wrap;
 			justify-content: start;
 		}
-		.right {
-			text-align: right;
-		}
 		.hidden {
 			display: none;
 		}
-		.parts-type {
+		.defense-textbox {
 			width: 5.0rem;
 		}
-		.parts-name {
+		.defense-suggest {
+			width: 17.0rem;
+		}
+		.parts-type-suggest {
+			width: 5.0rem;
+		}
+		.parts-name-suggest {
 			width: 12.0rem;
 		}
-		.parts-type-and-name{
-			width: 17.0rem;
+		.defense {
+			width: 3.0rem;
+			padding: 0.0rem 0.25rem 0.0rem 0.25rem;
+			text-align: center;
+		}
+		.parts-name {
+			width: 16.0rem;
+			padding: 0.0rem 0.25rem 0.0rem 0.25rem;
 			text-align: left;
+		}
+		.striped > thead > tr {
+			background: rgba(0, 0, 0, .08);
+		}
+		.striped > tbody > tr:nth-child(even) {
+			background: rgba(0, 0, 0, .08);
 		}
 	</style>
 	
@@ -299,37 +315,94 @@
 		
 		const ROWS_MAX = 100;
 		
-		let headOptions = [];
-		let coreOptions = [];
-		let armOptions = [];
-		let legOptions = [];
+		let headNameOptions = [];
+		let coreNameOptions = [];
+		let armNameOptions = [];
+		let legNameOptions = [];
 		let records = [];
 		
 		window.onload = function(){
 			function setEvents(){
-				let setFunctions = (id, ...funcs) => document.getElementById(id).onchange= () => funcs.forEach(f => f());
+				function changeMode(){
+					let isBigger = document.getElementById('is-bigger').checked;
+					
+					let textBoxes = ['ke', 'ce', 'te'];
+					textBoxes.forEach(id => {
+						let textbox = document.getElementById( id);
+						textbox.disabled = false;
+					});
+					
+					let defenseSuggests = ['ke-suggest', 'ce-suggest', 'te-suggest'];
+					defenseSuggests.forEach(id => {
+						let suggest = document.getElementById( id);
+						suggest.disabled = !isBigger;
+						suggest.children[0].selected = !isBigger;
+					});
+					
+					let typeSuggests = ['head-type', 'core-type', 'arms-type', 'legs-type'];
+					typeSuggests.forEach(id => document.getElementById(id).disabled = !isBigger);
+					
+					let nameSuggests = ['head-name', 'core-name', 'arms-name', 'legs-name'];
+					nameSuggests.forEach(id => document.getElementById(id).disabled = !isBigger);
+				}
 				
-				let updateHeadOptions = () => updateOptions('head-type', headOptions);
-				let updateCoreOptions = () => updateOptions('core-type', coreOptions);
-				let updateArmOptions  = () => updateOptions('arms-type', armOptions);
-				let updateLegOptions  = () => updateOptions('legs-type', legOptions);
+				function updateDefenseTextbox(textboxId, suggestId){
+					let textbox = document.getElementById(textboxId);
+					let suggest = document.getElementById(suggestId);
+					textbox.value = suggest.value;
+					textbox.disabled = suggest.value ? true : false;
+				}
 				
-				setFunctions('is-bigger', updateSelectBoxDisabled, search);
-				setFunctions('is-equals', updateSelectBoxDisabled, search);
-				setFunctions('ke', search);
-				setFunctions('ce', search);
-				setFunctions('te', search);
-				setFunctions('head-type', updateHeadOptions, search);
-				setFunctions('head-name', search);
-				setFunctions('core-type', updateCoreOptions, search);
-				setFunctions('core-name', search);
-				setFunctions('arms-type', updateArmOptions, search);
-				setFunctions('arms-name', search);
-				setFunctions('legs-type', updateLegOptions, search);
-				setFunctions('legs-name', search);
+				function updatePartsSuggest(typeId, options){
+					let type = document.getElementById(typeId).value;
+					options.filter((option, i) => i > 0).forEach(option => {
+						if(option.type == type){
+							option.element.classList.remove('hidden');
+						}
+						else{
+							option.element.classList.add('hidden');
+						}
+					});
+					options[0].element.selected = true;
+				}
+				
+				let onchange = (id, ...funcs) => document.getElementById(id).onchange = () => funcs.forEach(f => f());
+				let onclick  = (id, ...funcs) => document.getElementById(id).onclick  = () => funcs.forEach(f => f());
+				
+				let updateKeTextbox = () => updateDefenseTextbox('ke', 'ke-suggest');
+				let updateCeTextbox = () => updateDefenseTextbox('ce', 'ce-suggest');
+				let updateTeTextbox = () => updateDefenseTextbox('te', 'te-suggest');
+				let updateHeadSuggest = ()=> updatePartsSuggest('head-type', headNameOptions);
+				let updateCoreSuggest = ()=> updatePartsSuggest('core-type', coreNameOptions);
+				let updateArmSuggest  = ()=> updatePartsSuggest('arms-type',  armNameOptions);
+				let updateLegSuggest  = ()=> updatePartsSuggest('legs-type',  legNameOptions);
+				
+				onchange('is-bigger', changeMode, search);
+				onchange('is-equals', changeMode, search);
+				onchange('ke', search);
+				onchange('ce', search);
+				onchange('te', search);
+				onchange('ke-suggest', updateKeTextbox, search);
+				onchange('ce-suggest', updateCeTextbox, search);
+				onchange('te-suggest', updateTeTextbox, search);
+				onchange('head-type', updateHeadSuggest, search);
+				onchange('head-name', search);
+				onchange('core-type', updateCoreSuggest, search);
+				onchange('core-name', search);
+				onchange('arms-type', updateArmSuggest, search);
+				onchange('arms-name', search);
+				onchange('legs-type', updateLegSuggest, search);
+				onchange('legs-name', search);
+				onclick('ke-thead', () => sort('ke', true));
+				onclick('ce-thead', () => sort('ce', true));
+				onclick('te-thead', () => sort('te', true));
+				onclick('head-thead', () => sort('head', false));
+				onclick('core-thead', () => sort('core', false));
+				onclick('arms-thead', () => sort('arm', false));
+				onclick('legs-thead', () => sort('leg', false));
 			}
 			
-			function createOptions(parts){
+			function createNameOptions(parts){
 				let create = (text, value) =>{
 					let option = document.createElement('option');
 					option.text = text;
@@ -354,24 +427,39 @@
 			function createEmptyRecords(){
 				let records = [];
 				for(let i = 0; i < ROWS_MAX; i++){
-					let create = (tag, cls) => {
+					let create = (tag, ...cls) => {
 						let element = document.createElement(tag);
-						element.classList.add(cls);
+						cls.forEach( c => element.classList.add(c));
 						return element;
 					};
-					
 					let row = create('tr', 'hidden');
-					let ke = create('td', 'right');
-					let ce = create('td', 'right');
-					let te = create('td', 'right');
-					let parts = create('td', 'box');
-					let head = create('div', 'parts-type-and-name');
-					let core = create('div', 'parts-type-and-name');
-					let arm  = create('div', 'parts-type-and-name');
-					let leg  = create('div', 'parts-type-and-name');
 					
-					[ke, ce, te, parts].forEach(e => row.appendChild(e));
-					[head, core, arm, leg].forEach(e => parts.appendChild(e));
+					let data1 = create('td');
+					let defenses = create('div', 'box');
+					let ke = create('div', 'defense');
+					let ce = create('div', 'defense');
+					let te = create('div', 'defense');
+					
+					let data2 = create('td');
+					let allParts = create('div', 'box')
+					let parts1 = create('div', 'box');
+					let parts2 = create('div', 'box');
+					let head = create('div', 'parts-name');
+					let core = create('div', 'parts-name');
+					let arm  = create('div', 'parts-name');
+					let leg  = create('div', 'parts-name');
+					
+					let appendChildren = (parent, ...children) => children.forEach(e => parent.appendChild( e));
+					
+					appendChildren(row, data1, data2);
+					
+					appendChildren(data1, defenses);
+					appendChildren(defenses, ke, ce, te);
+					
+					appendChildren(data2, allParts);
+					appendChildren(allParts, parts1, parts2);
+					appendChildren(parts1, head, core);
+					appendChildren(parts2, arm, leg);
 					
 					records.push({row, ke, ce, te, head, core, arm, leg});
 				}
@@ -382,39 +470,20 @@
 			
 			let append = (id, values) => values.forEach(value => document.getElementById(id).appendChild(value));
 			
-			headOptions = createOptions(heads);
-			append('head-name', headOptions.map(option => option.element));
+			headNameOptions = createNameOptions(heads);
+			append('head-name', headNameOptions.map(option => option.element));
 			
-			coreOptions = createOptions(cores);
-			append('core-name', coreOptions.map(option => option.element));
+			coreNameOptions = createNameOptions(cores);
+			append('core-name', coreNameOptions.map(option => option.element));
 			
-			armOptions  = createOptions(arms);
-			append('arms-name', armOptions.map(option => option.element));
+			armNameOptions  = createNameOptions(arms);
+			append('arms-name', armNameOptions.map(option => option.element));
 			
-			legOptions  = createOptions(legs);
-			append('legs-name', legOptions.map(option => option.element));
+			legNameOptions  = createNameOptions(legs);
+			append('legs-name', legNameOptions.map(option => option.element));
 			
 			records = createEmptyRecords();
 			append('result-table', records.map(record => record.row));
-		}
-		
-		function updateSelectBoxDisabled(){
-			let isAvailable = document.getElementById('is-bigger').checked;
-			let selects = [...document.getElementsByTagName('select')];
-			selects.forEach( element => element.disabled = ! isAvailable);
-		}
-		
-		function updateOptions(typeId, options){
-			let type = document.getElementById(typeId).value;
-			options.filter((option, i) => i > 0).forEach(option => {
-				if(option.type == type){
-					option.element.classList.remove('hidden');
-				}
-				else{
-					option.element.classList.add('hidden');
-				}
-			});
-			options[0].element.selected = true;
 		}
 		
 		function search(){
@@ -439,15 +508,18 @@
 				let selectedLegs  = isBigger ? legs.filter( leg  => isSelected(leg,  legType,  legName )) : legs;
 				
 				let isMatched = isBigger ?
-					(ke_, ce_, te_) => ke_ >  ke && ce_ >  ce && te_ >  te:
-					(ke_, ce_, te_) => ke_ == ke && ce_ == ce && te_ == te;
+					(ke_, ce_, te_) => ke_ >  ke && ce_ >  ce && te_ > te :
+					(ke_, ce_, te_) => (!ke || ke_ == ke) && (!ce || ce_ == ce) && (!te || te_ == te);
+				
+				let isInputed = ke || ce || te;
 				
 				let terms = {
 					heads: selectedHeads,
 					cores: selectedCores,
 					arms:  selectedArms,
 					legs:  selectedLegs,
-					isMatched: isMatched
+					isMatched: isMatched,
+					isInputed: isInputed
 				};
 				return terms;
 			}
@@ -480,19 +552,38 @@
 			records.forEach(record => record.row.classList.add('hidden'));
 			
 			let terms = getTerms();
-			let results = getResults(terms);
-			results.forEach((result, i) => {
-				records[i].ke.innerHTML = result.ke;
-				records[i].ce.innerHTML = result.ce;
-				records[i].te.innerHTML = result.te;
-				records[i].head.innerHTML = result.head.type + ' ' + result.head.name;
-				records[i].core.innerHTML = result.core.type + ' ' + result.core.name;
-				records[i].arm.innerHTML  = result.arm.type  + ' ' + result.arm.name;
-				records[i].leg.innerHTML  = result.leg.type  + ' ' + result.leg.name;
-				records[i].row.classList.remove('hidden');
+			let results = terms.isInputed ? getResults(terms) : [];
+			records.forEach((record, i) => {
+				let result = results[i];
+				let empty = '';
+				record.ke.innerHTML = result ? result.ke : empty;
+				record.ce.innerHTML = result ? result.ce : empty;
+				record.te.innerHTML = result ? result.te : empty;
+				record.head.innerHTML = result ? result.head.type + ' ' + result.head.name : empty;
+				record.core.innerHTML = result ? result.core.type + ' ' + result.core.name : empty;
+				record.arm.innerHTML  = result ? result.arm.type  + ' ' + result.arm.name  : empty;
+				record.leg.innerHTML  = result ? result.leg.type  + ' ' + result.leg.name  : empty;
+				if(result){
+					record.row.classList.remove('hidden');
+				}
+				else{
+					record.row.classList.add('hidden');
+				}
 			});
 			
 			announce.value = results.length + '件の一致';
+		}
+		
+		function sort(column, isNumber){
+			let table = document.getElementById('result-table');
+			let isReverse = isNumber;
+			records.forEach(record => table.removeChild( record.row));
+			records.sort((a, b) => {
+				let x = isNumber ? Number(a[column].innerHTML) : a[column].innerHTML;
+				let y = isNumber ? Number(b[column].innerHTML) : b[column].innerHTML;
+				return x && y && x != y && isReverse != y > x ? -1 : 1;
+			});
+			records.forEach(record => table.appendChild(record.row));
 		}
 	</script>
 </head>
@@ -518,76 +609,153 @@
 			<tr>
 				<td>KE</td>
 				<td>
-					<input type="number" min="0" max="9999" value="0" id="ke" class="right">
+					<div class="box">
+						<input id="ke" type="number" min="0" max="9999" placeholder="0" class="right defense-textbox">
+						<select id="ke-suggest" class="defense-suggest">
+							<option value="">-</option>
+							<option value="2089">2089：Au-B-A04(カレンデュラ)＋衝撃</option>
+							<option value="1952">1952：SL/KMC-204V(赤垂直)</option>
+							<option value="1915">1915：SU09 Jellyfish(クラゲ爆風)＋衝撃</option>
+							<option value="1870">1870：SL/KMB-118H(ハバス)＋衝撃</option>
+							<option value="1783">1783：AM/RFA-222(AKライフル)＋衝撃</option>
+							<option value="1748">1748：SL/KMB-212H(衝撃ミサイル)＋衝撃</option>
+							<option value="1713">1713：AM/RFA-130(初期ライフル)＋衝撃</option>
+							<option value="1695">1695：SU09 Jellyfish(直撃)＋衝撃</option>
+							<option value="1671">1671：Au-B-A04(カレンデュラ)</option>
+							<option value="1567">1567：AM/ACA-218(カルバス)＋衝撃</option>
+							<option value="1532">1532：SU09 Jellyfish(クラゲ)</option>
+							<option value="1505">1505：AM/RFB-215(ランポ)</option>
+							<option value="1496">1496：SL/KMB-118H(ハバス)</option>
+							<option value="1426">1426：AM/RFA-222(AKライフル)</option>
+							<option value="1398">1398：SL/KMB-212H(衝撃ミサイル)</option>
+							<option value="1370">1370：AM/RFA-130(初期ライフル)</option>
+							<option value="1253">1253：AM/ACA-218(カルバス)</option>
+							<option value="1171">1171：AM/ACA-218(カルバス命中3振り)＋衝撃</option>
+							<option value="1077">1077：AKIGIRI mdl.2(ハンドガン)</option>
+							<option value="937">937：AM/ACA-218(カルバス命中3振り)</option>
+						</select>
+					</div>
 				</td>
 			</tr>
 			<tr>
 				<td>CE</td>
 				<td>
-					<input type="number" min="0" max="9999" value="0" id="ce" class="right">
+					<div class="box">
+						<input id="ce" type="number" min="0" max="9999" placeholder="0" class="right defense-textbox">
+						<select id="ce-suggest" class="defense-suggest">
+							<option value="">-</option>
+							<option value="2773">2773：Au-C-B19(ストレコ)</option>
+							<option value="2678">2678：Au-C-B07(ポデンカ)</option>
+							<option value="2620">2620：Su-J-G17(ミドミサ)＋衝撃</option>
+							<option value="2545">2545：Au-C-H22(三連バトライ)＋衝撃</option>
+							<option value="2413">2413：Au-C-B19(ストレコ 201振り)</option>
+							<option value="2331">2331：Au-C-B07(ポデンカ 201振り)</option>
+							<option value="2321">2321：WAB-123(武器腕8連ミドルミサイル)</option>
+							<option value="2284">2284：AM/BRA-125(サーシス)</option>
+							<option value="2137">2137：ARAGANE mdl.2(UBR)</option>
+							<option value="2096">2096：Su-J-G17(ミドルミサイル)</option>
+							<option value="2036">2036：Au-C-H22(三連バトライ)</option>
+							<option value="1772">1772：Au-C-H22(三連バトライ 201振り)</option>
+							<option value="1522">1522：ARAGANE mdl.2(UBR 命中3振り)</option>
+							<option value="1450">1450：Au-C-H22(三連バトライ 命中3振り)</option>
+							<option value="1142">1142：Su-J-A28(ショートレンジミサイル)</option>
+							<option value="1111">1111：AU25 Kalong(高威力ヒトマシ)</option>
+							<option value="1002">1002：AU24 Kayak(バランスが良いヒトマシ)</option>
+							<option value="973">973：Au-V-M05(高射撃安定のヒトマシ)</option>
+							<option value="914">914：Au-V-G39(リロードの早いヒトマシ)</option>
+							<option value="823">823：Su-J-R44A(ASミサイル)</option>
+						</select>
+					</div>
 				</td>
 			</tr>
 			<tr>
 				<td>TE</td>
 				<td>
-					<input type="number" min="0" max="9999" value="0" id="te" class="right">
+					<div class="box">
+						<input id="te" type="number" min="0" max="9999" placeholder="0" class="right defense-textbox">
+						<select id="te-suggest" class="defense-suggest">
+							<option value="">-</option>
+							<option value="1682">1682：NIODORI mdl.3(ナパ)＋Wアンプ</option>
+							<option value="1664">1664：Au-M-R31(マハオン)＋Sアンプ</option>
+							<option value="1604">1604：NUEDORI mdl.1(高威力高弾速プラズマミサイル)</option>
+							<option value="1559">1559：NIODORI mdl.1(フレモント)＋Wアンプ</option>
+							<option value="1452">1452：SU30 Jupiter(汎用プラズマミサイル)</option>
+							<option value="1390">1390：NIODORI mdl.3(ナパ)＋Sアンプ</option>
+							<option value="1376">1376：Au-M-R31(マハオン)</option>
+							<option value="1288">1288：NIODORI mdl.1(フレモント)＋Sアンプ</option>
+							<option value="1238">1238：Au-M-R31(マハオン 威力2振り)</option>
+							<option value="1149">1149：NIODORI mdl.3(ナパ)</option>
+							<option value="1065">1065：NIODORI mdl.1(フレモント)</option>
+							<option value="833">833：HATSUKARI mdl.2(アラキデ)</option>
+							<option value="801">801：HATSUKARI mdl.1(モデスト)</option>
+							<option value="691">691：AM/PMA-239(フェイヴ)</option>
+						</select>
+					</div>
 				</td>
 			</tr>
 			<tr>
 				<td>HEAD</td>
-				<td class="box">
-					<select id="head-type" class="parts-type">
-						<option value="">-</option>
-						<option value="KE">KE</option>
-						<option value="CE">CE</option>
-						<option value="TE">TE</option>
-					</select>
-					<select id="head-name" class="parts-name">
-					</select>
+				<td>
+					<div class="box">
+						<select id="head-type" class="parts-type-suggest">
+							<option value="">-</option>
+							<option value="KE">KE</option>
+							<option value="CE">CE</option>
+							<option value="TE">TE</option>
+						</select>
+						<select id="head-name" class="parts-name-suggest">
+						</select>
+					</div>
 				</td>
 			</tr>
 			<tr>
 				<td>CORE</td>
-				<td class="box">
-					<select id="core-type" class="parts-type">
-						<option value="">-</option>
-						<option value="KE">KE</option>
-						<option value="CE">CE</option>
-						<option value="TE">TE</option>
-					</select>
-					<select id="core-name" class="parts-name">
-					</select>
+				<td>
+					<div class="box">
+						<select id="core-type" class="parts-type-suggest">
+							<option value="">-</option>
+							<option value="KE">KE</option>
+							<option value="CE">CE</option>
+							<option value="TE">TE</option>
+						</select>
+						<select id="core-name" class="parts-name-suggest">
+						</select>
+					</div>
 				</td>
 			</tr>
 			<tr>
 				<td>ARMS</td>
-				<td class="box">
-					<select id="arms-type" class="parts-type">
-						<option value="">-</option>
-						<option value="KE">KE</option>
-						<option value="CE">CE</option>
-						<option value="TE">TE</option>
-						<option value="武器腕">武器腕</option>
-					</select>
-					<select id="arms-name" class="parts-name">
-					</select>
+				<td>
+					<div class="box">
+						<select id="arms-type" class="parts-type-suggest">
+							<option value="">-</option>
+							<option value="KE">KE</option>
+							<option value="CE">CE</option>
+							<option value="TE">TE</option>
+							<option value="武器腕">武器腕</option>
+						</select>
+						<select id="arms-name" class="parts-name-suggest">
+						</select>
+					</div>
 				</td>
 			</tr>
 			<tr>
 				<td>LEGS</td>
-				<td class="box">
-					<select id="legs-type" class="parts-type">
-						<option value="">-</option>
-						<option value="軽二">軽二</option>
-						<option value="中二">中二</option>
-						<option value="重二">重二</option>
-						<option value="軽逆">軽逆</option>
-						<option value="重逆">重逆</option>
-						<option value="四脚">四脚</option>
-						<option value="タンク">タンク</option>
-					</select>
-					<select id="legs-name" class="parts-name">
-					</select>
+				<td>
+					<div class="box">
+						<select id="legs-type" class="parts-type-suggest">
+							<option value="">-</option>
+							<option value="軽二">軽二</option>
+							<option value="中二">中二</option>
+							<option value="重二">重二</option>
+							<option value="軽逆">軽逆</option>
+							<option value="重逆">重逆</option>
+							<option value="四脚">四脚</option>
+							<option value="タンク">タンク</option>
+						</select>
+						<select id="legs-name" class="parts-name-suggest">
+						</select>
+					</div>
 				</td>
 			</tr>
 		</table>
@@ -598,17 +766,27 @@
 	</p>
 	
 	<p>
-		<table border="1">
+		<table class="striped">
 			<thead>
 				<tr>
-					<th>KE</th>
-					<th>CE</th>
-					<th>TE</th>
-					<th class="box">
-						<div class="parts-type-and-name">HEAD</div>
-						<div class="parts-type-and-name">CORE</div>
-						<div class="parts-type-and-name">ARMS</div>
-						<div class="parts-type-and-name">LEGS</div>
+					<th>
+						<div class="box">
+							<div id="ke-thead" class="defense">KE</div>
+							<div id="ce-thead" class="defense">CE</div>
+							<div id="te-thead" class="defense">TE</div>
+						</div>
+					</th>
+					<th>
+						<div class="box">
+							<div class="box">
+								<div id="head-thead" class="parts-name">HEAD</div>
+								<div id="core-thead" class="parts-name">CORE</div>
+							</div>
+							<div class="box">
+								<div id="arms-thead" class="parts-name">ARMS</div>
+								<div id="legs-thead" class="parts-name">LEGS</div>
+							</div>
+						</div>
 					</th>
 				</tr>
 			</thead>
