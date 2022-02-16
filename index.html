@@ -397,6 +397,8 @@
 						columns.forEach(column => record[column].innerHTML = '');
 						record.row.classList.add('hidden');
 					});
+					
+					document.getElementById('announce').value = '';
 				}
 				
 				let onchange = (id, ...funcs) => document.getElementById(id).onchange = () => funcs.forEach(f => f());
