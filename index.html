@@ -559,7 +559,12 @@
 					(ke_, ce_, te_) => ke_ >  ke && ce_ >  ce && te_ > te :
 					(ke_, ce_, te_) => (!ke || ke_ == ke) && (!ce || ce_ == ce) && (!te || te_ == te);
 				
-				let isInputed = ke || ce || te;
+				let isInputed = ke || ce || te || isBigger && (
+					headType || headName ||
+					coreType || coreName ||
+					armType  || armName  ||
+					legType  || legName
+				);
 				
 				let terms = {
 					heads: selectedHeads,
