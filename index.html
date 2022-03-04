@@ -549,16 +549,6 @@
 				let legType  = document.getElementById('legs-type').value;
 				let legName  = document.getElementById('legs-name').value;
 				
-				let isSelected = (part, type, name) => name ? part.name == name : !type || part.type == type;
-				let selectedHeads = isBigger ? heads.filter(head => isSelected(head, headType, headName)) : heads;
-				let selectedCores = isBigger ? cores.filter(core => isSelected(core, coreType, coreName)) : cores;
-				let selectedArms  = isBigger ? arms.filter( arm  => isSelected(arm,  armType,  armName )) : arms;
-				let selectedLegs  = isBigger ? legs.filter( leg  => isSelected(leg,  legType,  legName )) : legs;
-				
-				let isMatched = isBigger ?
-					(ke_, ce_, te_) => ke_ >  ke && ce_ >  ce && te_ > te :
-					(ke_, ce_, te_) => (!ke || ke_ == ke) && (!ce || ce_ == ce) && (!te || te_ == te);
-				
 				let isInputed = ke || ce || te || isBigger && (
 					headType || headName ||
 					coreType || coreName ||
@@ -567,28 +557,40 @@
 				);
 				
 				let terms = {
-					heads: selectedHeads,
-					cores: selectedCores,
-					arms:  selectedArms,
-					legs:  selectedLegs,
-					isMatched: isMatched,
-					isInputed: isInputed
+					isBigger, ke, ce, te,
+					headType, headName,
+					coreType, coreName,
+					armType,  armName,
+					legType,  legName,
+					isInputed
 				};
 				return terms;
 			}
 			
 			function getResults(terms){
+				let isSelected = (part, type, name) => name ? part.name == name : !type || part.type == type;
+				let selectedHeads = terms.isBigger ? heads.filter(head => isSelected(head, terms.headType, terms.headName)) : heads;
+				let selectedCores = terms.isBigger ? cores.filter(core => isSelected(core, terms.coreType, terms.coreName)) : cores;
+				let selectedArms  = terms.isBigger ? arms.filter( arm  => isSelected(arm,  terms.armType,  terms.armName )) : arms;
+				let selectedLegs  = terms.isBigger ? legs.filter( leg  => isSelected(leg,  terms.legType,  terms.legName )) : legs;
+				
+				let isMatched = terms.isBigger ?
+					(ke, ce, te) => ke > terms.ke && ce > terms.ce && te > terms.te :
+					(ke, ce, te) => (!terms.ke || ke == terms.ke) && (!terms.ce || ce == terms.ce) && (!terms.te || te == terms.te);
+				
+				let lengthMax = terms.isBigger ? ROWS_MAX : 1;
+				
 				let results = [];
-				for(let head of terms.heads){
-					for(let core of terms.cores){
-						for(let arm of terms.arms){
-							for(let leg of terms.legs){
+				for(let head of selectedHeads){
+					for(let core of selectedCores){
+						for(let arm of selectedArms){
+							for(let leg of selectedLegs){
 								let ke = head.ke + core.ke + arm.ke + leg.ke;
 								let ce = head.ce + core.ce + arm.ce + leg.ce;
 								let te = head.te + core.te + arm.te + leg.te;
-								if(terms.isMatched(ke, ce, te)){
+								if(isMatched(ke, ce, te)){
 									results.push({ke, ce, te, head, core, arm, leg});
-									if(results.length >= ROWS_MAX){
+									if(results.length >= lengthMax){
 										return results;
 									}
 								}
